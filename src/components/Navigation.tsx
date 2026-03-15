@@ -12,25 +12,32 @@ export default function Navigation() {
 
   const homeHref = user ? "/home" : "/";
   const navItems = [
-    { name: "Home", href: homeHref, public: true },
-    { name: "Camera", href: "/camera", public: false },
-    { name: "History", href: "/history", public: false },
-    { name: "Settings", href: "/settings", public: false },
-  ];
+  { name: "Home", href: homeHref, public: true, desktopHidden: true },
+  { name: "Camera", href: "/camera", public: false, desktopHidden: false },
+  { name: "History", href: "/history", public: false, desktopHidden: false },
+  { name: "Settings", href: "/settings", public: false, desktopHidden: false },
+];
 
   const isActive = (path: string) => pathname === path;
 
   return (
     <nav className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/85 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-        <Link href="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
+        <Link
+          href="/"
+          className="flex items-center gap-2"
+          onClick={() => setIsMenuOpen(false)}
+        >
           <span className="text-xl">🌾</span>
-          <span className="text-lg font-semibold text-slate-900">PaddySense</span>
+          <span className="text-lg font-semibold text-slate-900">
+            PaddySense
+          </span>
         </Link>
 
         <div className="hidden items-center gap-2 md:flex">
           {navItems.map((item) => {
             if (!item.public && !user) return null;
+            if (item.desktopHidden && !user) return null;
             return (
               <Link
                 key={item.href}
@@ -69,11 +76,26 @@ export default function Navigation() {
           className="rounded-lg p-2 text-slate-700 transition hover:bg-slate-100 md:hidden"
           aria-label="Toggle menu"
         >
-          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="h-6 w-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             {isMenuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             )}
           </svg>
         </button>
@@ -114,10 +136,18 @@ export default function Navigation() {
               </button>
             ) : (
               <>
-                <Link href="/login" onClick={() => setIsMenuOpen(false)} className="btn-secondary w-full">
+                <Link
+                  href="/login"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="btn-secondary w-full"
+                >
                   Login
                 </Link>
-                <Link href="/register" onClick={() => setIsMenuOpen(false)} className="btn-primary w-full">
+                <Link
+                  href="/register"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="btn-primary w-full"
+                >
                   Register
                 </Link>
               </>

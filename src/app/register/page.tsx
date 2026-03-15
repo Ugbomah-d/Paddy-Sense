@@ -19,20 +19,21 @@ export default function RegisterPage() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError("Passwords do not match.");
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setError("Password must be at least 6 characters.");
       return;
     }
 
-    const success = await register(name, email, password);
-    if (success) {
+    const result = await register(name, email, password);
+
+    if (result === true) {
       router.push("/home");
     } else {
-      setError("Registration failed. Please try again.");
+      setError(typeof result === "string" ? result : "Registration failed. Please try again.");
     }
   };
 
@@ -41,11 +42,15 @@ export default function RegisterPage() {
       <div className="surface w-full p-6 sm:p-8">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-slate-900 sm:text-3xl">Create account</h1>
-          <p className="mt-2 text-sm text-slate-600">Join PaddySense and start detecting rice leaf diseases.</p>
+          <p className="mt-2 text-sm text-slate-600">
+            Join PaddySense and start detecting rice leaf diseases.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+          {error && (
+            <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+          )}
 
           <div>
             <label htmlFor="fullName" className="mb-2 block text-sm font-medium text-slate-700">

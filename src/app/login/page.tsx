@@ -16,11 +16,11 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    const success = await login(email, password);
-    if (success) {
+    const result = await login(email, password);
+    if (result === true) {
       router.push("/home");
     } else {
-      setError("Invalid email or password");
+      setError(typeof result === "string" ? result : "Invalid email or password.");
     }
   };
 
@@ -29,11 +29,15 @@ export default function LoginPage() {
       <div className="surface w-full p-6 sm:p-8">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-slate-900 sm:text-3xl">Welcome back</h1>
-          <p className="mt-2 text-sm text-slate-600">Sign in to continue scanning and managing your results.</p>
+          <p className="mt-2 text-sm text-slate-600">
+            Sign in to continue scanning and managing your results.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+          {error && (
+            <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+          )}
 
           <div>
             <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-700">

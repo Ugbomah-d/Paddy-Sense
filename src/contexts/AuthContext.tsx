@@ -3,6 +3,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+
 interface User {
   id: string;
   email: string;
@@ -11,9 +13,10 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  token: string | null;
   isAuthReady: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<true | string>;
+  register: (name: string, email: string, password: string) => Promise<true | string>;
   logout: () => void;
   deleteAccount: () => Promise<boolean>;
   loading: boolean;
@@ -23,85 +26,120 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser]   = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     try {
-      const savedUser = localStorage.getItem("user");
-      setUser(savedUser ? (JSON.parse(savedUser) as User) : null);
+      const savedUser  = localStorage.getItem("user");
+      const savedToken = localStorage.getItem("token");
+      if (savedUser && savedToken) {
+        setUser(JSON.parse(savedUser) as User);
+        setToken(savedToken);
+      }
     } catch {
       setUser(null);
+      setToken(null);
     } finally {
       setIsAuthReady(true);
     }
   }, []);
 
-  const login = async (email: string, password: string) => {
-    // Simulate API call
+  const persistSession = (u: User, t: string) => {
+    setUser(u);
+    setToken(t);
+    localStorage.setItem("user", JSON.stringify(u));
+    localStorage.setItem("token", t);
+  };
+
+  const clearSession = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+  };
+
+  const login = async (email: string, password: string): Promise<true | string> => {
     setLoading(true);
     try {
-      // Mock login - in production, this would be a real API call
-      if (email && password.length >= 6) {
-        const user = {
-          id: Math.random().toString(36).substr(2, 9),
-          email,
-          name: email.split("@")[0],
-        };
-        setUser(user);
-        localStorage.setItem("user", JSON.stringify(user));
-        return true;
+      const res = await fetch(`${API_BASE}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({})) as { message?: string };
+        return errBody.message ?? "Invalid email or password.";
       }
-      return false;
+
+      const data = await res.json() as { token: string; user: User };
+      persistSession(data.user, data.token);
+      return true;
     } catch {
-      return false;
+      return "Network error. Is the server running?";
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (
+    name: string,
+    email: string,
+    password: string
+  ): Promise<true | string> => {
     setLoading(true);
     try {
-      // Mock registration
-      if (name && email && password.length >= 6) {
-        const user = {
-          id: Math.random().toString(36).substr(2, 9),
-          email,
-          name,
-        };
-        setUser(user);
-        localStorage.setItem("user", JSON.stringify(user));
+      const res = await fetch(`${API_BASE}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({})) as { message?: string };
+        return errBody.message ?? "Registration failed. Please try again.";
+      }
+
+      const data = await res.json() as { token?: string; user?: User };
+
+      if (data.token && data.user) {
+        persistSession(data.user, data.token);
         return true;
       }
-      return false;
+
+      const loginResult = await login(email, password);
+      return loginResult === true ? true : "Account created but login failed. Please log in manually.";
     } catch {
-      return false;
+      return "Network error. Is the server running?";
     } finally {
       setLoading(false);
     }
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
+    clearSession();
+    localStorage.removeItem("scanHistory");
   };
 
-  const deleteAccount = async () => {
+  const deleteAccount = async (): Promise<boolean> => {
     setLoading(true);
     try {
-      // Mock account deletion
-      localStorage.removeItem("user");
+      if (token) {
+        await fetch(`${API_BASE}/delete-account`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => {});
+      }
+      clearSession();
       localStorage.removeItem("scanHistory");
-      setUser(null);
       return true;
     } catch {
       return false;
@@ -112,7 +150,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthReady, login, register, logout, deleteAccount, loading }}
+      value={{ user, token, isAuthReady, login, register, logout, deleteAccount, loading }}
     >
       {children}
     </AuthContext.Provider>
