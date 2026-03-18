@@ -79,37 +79,7 @@ export default function SettingsPage() {
       </section>
 
       {/* Preferences */}
-      <section className="surface p-5 sm:p-6">
-        <h2 className="text-lg font-semibold text-slate-900">Preferences</h2>
-        <div className="mt-4 space-y-4">
-          <ToggleRow
-            label="Notifications"
-            enabled={notifications}
-            onToggle={() => setNotifications((v) => !v)}
-          />
-          <ToggleRow
-            label="Offline Mode"
-            enabled={offlineMode}
-            onToggle={() => setOfflineMode((v) => !v)}
-          />
-          <div>
-            <label htmlFor="language" className="mb-2 block text-sm font-medium text-slate-700">
-              Language
-            </label>
-            <select
-              id="language"
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="input-field"
-            >
-              <option value="en">English</option>
-              <option value="es">Español</option>
-              <option value="fr">Français</option>
-              <option value="zh">Chinese</option>
-            </select>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Data Management */}
       <section className="surface p-5 sm:p-6">
