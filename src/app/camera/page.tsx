@@ -310,7 +310,7 @@ export default function CameraPage() {
               </span>
             </div>
             <p className="text-sm text-slate-600">Confidence: {result.confidence}%</p>
-            <button onClick={resetScan} className="btn-primary w-full sm:w-auto">
+            <button onClick={handleUploadClick} className="btn-primary w-full sm:w-auto">
               {sourceWasUpload ? "Upload Another Image" : "Scan Another Leaf"}
             </button>
           </div>

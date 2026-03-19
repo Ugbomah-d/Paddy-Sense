@@ -13,9 +13,7 @@ export default function SettingsPage() {
   const [showHistoryDeleteConfirm, setShowHistoryDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [historyDeleted, setHistoryDeleted] = useState(false);
-  const [notifications, setNotifications] = useState(true);
-  const [offlineMode, setOfflineMode] = useState(true);
-  const [language, setLanguage] = useState("en");
+
 
   useEffect(() => {
     if (isAuthReady && !user) router.push("/login");

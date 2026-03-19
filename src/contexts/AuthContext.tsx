@@ -130,23 +130,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const deleteAccount = async (): Promise<boolean> => {
-    setLoading(true);
-    try {
-      if (token) {
-        await fetch(`${API_BASE}/delete-account`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        }).catch(() => {});
+  setLoading(true);
+  try {
+    if (token && user) {
+      const res = await fetch(`${API_BASE}/delete_account/${user.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        console.error("Delete failed:", data.message);
+        return false; // Don't clear session if backend failed
       }
-      clearSession();
-      localStorage.removeItem("scanHistory");
-      return true;
-    } catch {
-      return false;
-    } finally {
-      setLoading(false);
     }
-  };
+
+    clearSession();
+    localStorage.removeItem("scanHistory");
+    return true;
+  } catch (err) {
+    console.error("Delete account error:", err);
+    return false;
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <AuthContext.Provider
